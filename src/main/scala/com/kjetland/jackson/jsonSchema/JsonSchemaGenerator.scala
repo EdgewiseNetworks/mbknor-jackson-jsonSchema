@@ -871,7 +871,7 @@ class JsonSchemaGenerator
 
         Option(serializerOrNull).map { serializer =>
           serializer.getTypeInclusion match {
-            case JsonTypeInfo.As.PROPERTY | JsonTypeInfo.As.EXISTING_PROPERTY =>
+            case JsonTypeInfo.As.PROPERTY | JsonTypeInfo.As.EXISTING_PROPERTY | JsonTypeInfo.As.WRAPPER_OBJECT =>
               val idResolver = serializer.getTypeIdResolver
               val id = idResolver match {
                 // use custom implementation instead, because default implementation needs instance and we don't have one

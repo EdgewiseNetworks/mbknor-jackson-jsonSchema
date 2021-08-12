@@ -4,36 +4,36 @@ import sbtrelease.ReleasePlugin.autoImport.releaseStepCommand
 lazy val commonSettings = Seq(
   organization := "com.kjetland",
   organizationName := "mbknor",
-  scalaVersion := "2.12.4",
-  crossScalaVersions := Seq("2.10.7", "2.11.12", "2.12.10", "2.13.1"),
+  scalaVersion := "2.13.6",
+  crossScalaVersions := Seq("2.11.12", "2.12.14"),
   publishMavenStyle := true,
   publishArtifact in Test := false,
   pomIncludeRepository := { _ => false },
   publishTo := {
-    val nexus = "https://oss.sonatype.org/"
+    val nexus = "http://artifactory.edgewise.devops/artifactory/gradle-dev"
     if (isSnapshot.value)
-      Some("snapshots" at nexus + "content/repositories/snapshots")
+      Some("Artifactory Realm" at nexus + ";build.timestamp=" + new java.util.Date().getTime)
     else
-      Some("releases" at nexus + "service/local/staging/deploy/maven2")
+      Some("Artifactory Realm" at nexus)
   },
-  credentials += Credentials(Path.userHome / ".ivy2" / ".credentials_sonatype"),
-  homepage := Some(url("https://github.com/mbknor/mbknor-jackson-jsonSchema")),
-  licenses := Seq("MIT" -> url("https://github.com/mbknor/mbknor-jackson-jsonSchema/blob/master/LICENSE.txt")),
-  startYear := Some(2016),
+  credentials += Credentials(Path.userHome / ".sbt" / ".credentials"),
+  homepage := Some(url("https://github.com/EdgewiseNetworks/mbknor-jackson-jsonSchema")),
+  licenses := Seq("MIT" -> url("https://github.com/EdgewiseNetworks/mbknor-jackson-jsonSchema/blob/master/LICENSE.txt")),
+  startYear := Some(2021),
   pomExtra := (
       <scm>
-        <url>git@github.com:mbknor/mbknor-jackson-jsonSchema.git</url>
-        <connection>scm:git:git@github.com:mbknor/mbknor-jackson-jsonSchema.git</connection>
+        <url>git@github.com:EdgewiseNetworks/mbknor-jackson-jsonSchema.git</url>
+        <connection>scm:git:git@github.com:EdgewiseNetworks/mbknor-jackson-jsonSchema.git</connection>
       </scm>
       <developers>
         <developer>
-          <id>mbknor</id>
-          <name>Morten Kjetland</name>
-          <url>https://github.com/mbknor</url>
+          <id>raymundane</id>
+          <name>Raymond Liu</name>
+          <url>https://github.com/raymundane</url>
         </developer>
       </developers>),
   compileOrder in Test := CompileOrder.Mixed,
-  javacOptions ++= Seq("-source", "1.8", "-target", "1.8"),
+  javacOptions ++= Seq("-source", "11", "-target", "11"),
   scalacOptions ++= Seq("-unchecked", "-deprecation"),
   releaseCrossBuild := true,
   releasePublishArtifactsAction := PgpKeys.publishSigned.value,
