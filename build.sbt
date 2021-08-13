@@ -29,6 +29,7 @@ lazy val commonSettings = Seq(
         <developer>
           <id>raymundane</id>
           <name>Raymond Liu</name>
+          <email>rliu@zscaler.com</email>
           <url>https://github.com/raymundane</url>
         </developer>
       </developers>),
