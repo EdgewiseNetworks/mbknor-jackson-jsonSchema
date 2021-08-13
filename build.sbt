@@ -10,7 +10,7 @@ lazy val commonSettings = Seq(
   publishArtifact in Test := false,
   pomIncludeRepository := { _ => false },
   publishTo := {
-    val nexus = "http://artifactory.edgewise.devops/artifactory/gradle-dev"
+    val nexus = "http://artifactory.edgewise.devops/artifactory/gradle-dev-local"
     if (isSnapshot.value)
       Some("Artifactory Realm" at nexus + ";build.timestamp=" + new java.util.Date().getTime)
     else
