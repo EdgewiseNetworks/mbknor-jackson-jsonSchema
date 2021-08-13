@@ -5,7 +5,7 @@ lazy val commonSettings = Seq(
   organization := "com.kjetland",
   organizationName := "mbknor",
   scalaVersion := "2.13.6",
-  crossScalaVersions := Seq("2.11.12", "2.12.14"),
+  crossScalaVersions := Seq("2.11.12", "2.12.14", "2.13.6"),
   publishMavenStyle := true,
   publishArtifact in Test := false,
   pomIncludeRepository := { _ => false },
@@ -37,7 +37,6 @@ lazy val commonSettings = Seq(
   javacOptions ++= Seq("-source", "11", "-target", "11"),
   scalacOptions ++= Seq("-unchecked", "-deprecation"),
   releaseCrossBuild := true,
-//  releasePublishArtifactsAction := PgpKeys.publishSigned.value,
   scalacOptions in(Compile, doc) ++= Seq(scalaVersion.value).flatMap {
     case v if v.startsWith("2.12") =>
       Seq("-no-java-comments") //workaround for scala/scala-dev#249
@@ -87,6 +86,4 @@ releaseProcess := Seq[ReleaseStep](
   setNextVersion,
   commitNextVersion,
   pushChanges
-//  ,
-//  releaseStepCommand("sonatypeRelease")
 )
