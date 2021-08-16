@@ -857,7 +857,7 @@ class JsonSchemaGenerator
         o
       }
     }
-    case class PolymorphismInfo(typePropertyName:String, subTypeName:String)
+    case class PolymorphismInfo(typePropertyName:Option[String], subTypeName:String)
 
     private def extractPolymorphismInfo(_type:JavaType):Option[PolymorphismInfo] = {
       val maybeBaseType = ClassUtil.findSuperTypes(_type, null, false).asScala.find { cl =>
@@ -878,7 +878,7 @@ class JsonSchemaGenerator
                 case _ : MinimalClassNameIdResolver => extractMinimalClassnameId(baseType, _type)
                 case _ => idResolver.idFromValueAndType(null, _type.getRawClass)
               }
-              PolymorphismInfo(serializer.getPropertyName, id)
+              PolymorphismInfo(Option(serializer.getPropertyName), id)
 
             case x => throw new Exception(s"We do not support polymorphism using jsonTypeInfo.include() = $x")
           }
@@ -1057,48 +1057,49 @@ class JsonSchemaGenerator
               val propertiesNode = JsonNodeFactory.instance.objectNode()
               thisObjectNode.set("properties", propertiesNode)
 
-              extractPolymorphismInfo(_type).map {
-                case pi: PolymorphismInfo =>
+              extractPolymorphismInfo(_type).foreach {
+                pi: PolymorphismInfo =>
                   // This class is a child in a polymorphism config..
                   // Set the title = subTypeName
                   thisObjectNode.put("title", pi.subTypeName)
 
-                  // must inject the 'type'-param and value as enum with only one possible value
-                  // This is done to make sure the json generated from the schema using this oneOf
-                  // contains the correct "type info"
-                  val enumValuesNode = JsonNodeFactory.instance.arrayNode()
-                  enumValuesNode.add(pi.subTypeName)
+                  pi.typePropertyName.foreach(typePropertyName => {
+                    // must inject the 'type'-param and value as enum with only one possible value
+                    // This is done to make sure the json generated from the schema using this oneOf
+                    // contains the correct "type info"
+                    val enumValuesNode = JsonNodeFactory.instance.arrayNode()
+                    enumValuesNode.add(pi.subTypeName)
 
-                  val enumObjectNode = JsonNodeFactory.instance.objectNode()
-                  enumObjectNode.put("type", "string")
-                  enumObjectNode.set("enum", enumValuesNode)
-                  enumObjectNode.put("default", pi.subTypeName)
+                    val enumObjectNode = JsonNodeFactory.instance.objectNode()
+                    enumObjectNode.put("type", "string")
+                    enumObjectNode.set("enum", enumValuesNode)
+                    enumObjectNode.put("default", pi.subTypeName)
 
-                  if (config.hidePolymorphismTypeProperty) {
-                    // Make sure the editor hides this polymorphism-specific property
-                    val optionsNode = JsonNodeFactory.instance.objectNode()
-                    enumObjectNode.set("options", optionsNode)
-                    optionsNode.put("hidden", true)
-                  }
+                    if (config.hidePolymorphismTypeProperty) {
+                      // Make sure the editor hides this polymorphism-specific property
+                      val optionsNode = JsonNodeFactory.instance.objectNode()
+                      enumObjectNode.set("options", optionsNode)
+                      optionsNode.put("hidden", true)
+                    }
 
-                  propertiesNode.set(pi.typePropertyName, enumObjectNode)
+                    propertiesNode.set(typePropertyName, enumObjectNode)
 
-                  getRequiredArrayNode(thisObjectNode).add(pi.typePropertyName)
+                    getRequiredArrayNode(thisObjectNode).add(typePropertyName)
 
-                  if (config.useMultipleEditorSelectViaProperty) {
-                    // https://github.com/jdorn/json-editor/issues/709
-                    // Generate info to help generated editor to select correct oneOf-type
-                    // when populating the gui/schema with existing data
-                    val multipleEditorSelectViaPropertyNode = JsonNodeFactory.instance.objectNode()
-                    multipleEditorSelectViaPropertyNode.put("property", pi.typePropertyName)
-                    multipleEditorSelectViaPropertyNode.put("value", pi.subTypeName)
+                    if (config.useMultipleEditorSelectViaProperty) {
+                      // https://github.com/jdorn/json-editor/issues/709
+                      // Generate info to help generated editor to select correct oneOf-type
+                      // when populating the gui/schema with existing data
+                      val multipleEditorSelectViaPropertyNode = JsonNodeFactory.instance.objectNode()
+                      multipleEditorSelectViaPropertyNode.put("property", typePropertyName)
+                      multipleEditorSelectViaPropertyNode.put("value", pi.subTypeName)
 
-                    val objectOptionsNode = JsonNodeFactory.instance.objectNode()
-                    objectOptionsNode.set("multiple_editor_select_via_property", multipleEditorSelectViaPropertyNode)
-                    thisObjectNode.set("options", objectOptionsNode)
-                    ()
-                  }
-
+                      val objectOptionsNode = JsonNodeFactory.instance.objectNode()
+                      objectOptionsNode.set("multiple_editor_select_via_property", multipleEditorSelectViaPropertyNode)
+                      thisObjectNode.set("options", objectOptionsNode)
+                      ()
+                    }
+                  })
               }
 
               Some(new JsonObjectFormatVisitor with MySerializerProvider {
